@@ -1,0 +1,28 @@
+cmake_minimum_required(VERSION 3.16)
+project(tej3d_core LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+# No third party code. Everything here is ours.
+set(TEJ3D_SOURCES src/physics.cpp src/trimesh.cpp src/png.cpp src/jpeg.cpp src/anim.cpp src/world.cpp src/raster.cpp src/gltf.cpp src/character.cpp src/media_enc.cpp src/gpu_gl.cpp src/capi.cpp)
+
+add_library(tej3d SHARED ${TEJ3D_SOURCES})
+target_include_directories(tej3d PUBLIC include PRIVATE src)
+target_link_libraries(tej3d PRIVATE ${CMAKE_DL_LIBS})
+if(NOT MSVC)
+  target_compile_options(tej3d PRIVATE -Wall -Wextra -fno-exceptions -fno-rtti)
+endif()
+
+option(TEJ3D_BUILD_TESTS "Build native tests" ON)
+if(TEJ3D_BUILD_TESTS)
+  enable_testing()
+  add_executable(tej3d_tests tests/test_main.cpp ${TEJ3D_SOURCES})
+  target_include_directories(tej3d_tests PRIVATE include src)
+  target_link_libraries(tej3d_tests PRIVATE ${CMAKE_DL_LIBS})
+  add_test(NAME tej3d_tests COMMAND tej3d_tests)
+endif()
